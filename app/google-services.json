@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "616611961437",
+    "firebase_url": "https://uniplayer-849b7.firebaseio.com",
+    "project_id": "uniplayer-849b7",
+    "storage_bucket": "uniplayer-849b7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616611961437:android:7a8acf5a9a553196",
+        "android_client_info": {
+          "package_name": "com.example.android.uamp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "616611961437-6lr49kbr6714211dg5bobuhueq7k30dd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtR2YNb-3oq5jvAF9J8pHYU6neYiTXR3I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616611961437:android:122cf4483b433867",
+        "android_client_info": {
+          "package_name": "com.huylv.uniplayer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "616611961437-6lr49kbr6714211dg5bobuhueq7k30dd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtR2YNb-3oq5jvAF9J8pHYU6neYiTXR3I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

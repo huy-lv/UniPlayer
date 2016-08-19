@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.sothree.slidinguppanel.SlidingUpPanelLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:sothree="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/sliding_layout"
+	tools:context="com.huylv.uniplayer.MainActivity"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:fitsSystemWindows="true"
+	android:gravity="bottom"
+	sothree:umanoPanelHeight="68dp"
+	sothree:umanoShadowHeight="4dp">
+
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="#b9ff6565"
+		android:gravity="center"
+		android:textSize="16sp">
+		<include
+			android:id="@+id/toolbar" layout="@layout/toolbar"/>
+		<FrameLayout
+			android:id="@+id/layout_main"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_below="@+id/toolbar"/>
+
+	</RelativeLayout>
+
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="#6ea955"
+		android:id="@+id/playing_song_rl"
+		android:gravity="center|top">
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="sss"/>
+	</RelativeLayout>
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>
+

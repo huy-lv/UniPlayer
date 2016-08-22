@@ -9,13 +9,13 @@
 	android:layout_height="match_parent"
 	android:fitsSystemWindows="true"
 	android:gravity="bottom"
-	sothree:umanoPanelHeight="68dp"
-	sothree:umanoShadowHeight="4dp">
+	sothree:umanoPanelHeight="@dimen/panel_height"
+	sothree:umanoShadowHeight="4dp"
+	sothree:umanoParallaxOffset="100dp">
 
 	<RelativeLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:background="#b9ff6565"
 		android:gravity="center"
 		android:textSize="16sp">
 		<include
@@ -34,10 +34,7 @@
 		android:background="#6ea955"
 		android:id="@+id/playing_song_rl"
 		android:gravity="center|top">
-		<TextView
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="sss"/>
+		<include layout="@layout/full_screen_playing"/>
 	</RelativeLayout>
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 

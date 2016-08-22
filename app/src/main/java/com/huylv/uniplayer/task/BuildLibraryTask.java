@@ -1,6 +1,8 @@
 package com.huylv.uniplayer.task;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -10,7 +12,9 @@ import android.widget.Toast;
 import com.huylv.uniplayer.MainActivity;
 import com.huylv.uniplayer.model.Song;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 
 import io.realm.Realm;
 
@@ -68,8 +72,15 @@ public class BuildLibraryTask  extends AsyncTask<Void,Void,Integer> {
             if(artist==null || artist.equals("")) artist = "Unknown";
             String name = mdr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
             if(name==null) name = f.getName();
+            //picture
+            InputStream inputStream = null;
+            if(mdr.getEmbeddedPicture()!=null){
+                inputStream = new ByteArrayInputStream(mdr.getEmbeddedPicture());
+            }
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
-            Song song = new Song(name,artist,f.getAbsolutePath(),length);
+            mdr.release();
+            Song song = new Song(name,artist,f.getAbsolutePath(),length,Config.BitMapToString(bitmap));
             Config.localSongList.add(song);
             realm.copyToRealm(song);
         }
@@ -123,4 +134,6 @@ public class BuildLibraryTask  extends AsyncTask<Void,Void,Integer> {
         }
         return -1;
     }
+
+
 }

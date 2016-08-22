@@ -1,5 +1,9 @@
 package com.huylv.uniplayer.model;
 
+import android.net.Uri;
+
+import java.io.File;
+
 import io.realm.RealmObject;
 
 /**
@@ -11,6 +15,16 @@ public class Song extends RealmObject {
     private String filePath;
     private String downloadLink;
     private int length;
+
+    public String getBitmapString() {
+        return bitmapString;
+    }
+
+    public void setBitmapString(String bitmapString) {
+        this.bitmapString = bitmapString;
+    }
+
+    private String bitmapString;
 
     public boolean isAvailableOnServer() {
         return availableOnServer;
@@ -54,11 +68,12 @@ public class Song extends RealmObject {
         this.downloadLink = downloadLink;
     }
 
-    public Song(String name, String artist, String filePath, int length) {
+    public Song(String name, String artist, String filePath, int length, String bitmapString) {
         this.name = name;
         this.artist = artist;
         this.filePath = filePath;
         this.length = length;
+        this.bitmapString = bitmapString;
     }
 
     public void setAll(String name, String artist, String filePath){
@@ -86,5 +101,9 @@ public class Song extends RealmObject {
             return true;
         }
         return false;
+    }
+
+    public Uri getSongUri() {
+        return Uri.fromFile(new File(filePath));
     }
 }

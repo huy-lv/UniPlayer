@@ -21,6 +21,16 @@
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
 		</activity>
+
+		<service android:name=".service.MusicService">
+			<intent-filter>
+				<action android:name="com.uniplayer.STOP" />
+				<action android:name="com.uniplayer.NEXT" />
+				<action android:name="com.uniplayer.PREVIOUS" />
+				<action android:name="com.uniplayer.PAUSE" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+		</service>
 	</application>
 
 </manifest>

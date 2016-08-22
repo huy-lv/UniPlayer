@@ -1,17 +1,21 @@
 package com.huylv.uniplayer.adapter;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
+import android.graphics.Bitmap;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.huylv.uniplayer.MainActivity;
 import com.huylv.uniplayer.R;
 import com.huylv.uniplayer.model.Song;
+import com.huylv.uniplayer.service.MusicService;
+import com.huylv.uniplayer.task.Config;
 
 import java.util.ArrayList;
 
@@ -41,21 +45,28 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     }
 
     @Override
-    public void onBindViewHolder(SongViewHolder holder, int position) {
-        holder.title.setText(songArrayList.get(position).getName());
-        holder.description.setText(songArrayList.get(position).getArtist());
+    public void onBindViewHolder(SongViewHolder holder, final int position) {
+        Song thisSong = songArrayList.get(position);
+        holder.title.setText(thisSong.getName());
+        holder.description.setText(thisSong.getArtist());
 //        if(songArrayList.get(position).equals(Config.playingSong)){
 //            holder.playing.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.ic_media_pause));
 //        }else{
-            holder.playing.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.ic_media_play));
+//            holder.playing.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.ic_media_play));
 //        }
         holder.song_item_cv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                context.getSupportMediaController().getTransportControls()
-//                        .playFromMediaId(item.getMediaId(), null);
+                ((MainActivity)context).setSelectedSong(position, MusicService.NOTIFICATION_ID);
             }
         });
+
+        if(thisSong.getBitmapString()!=null) {
+            Bitmap bitmap = Config.StringToBitMap(thisSong.getBitmapString());
+            holder.playing.setImageBitmap(bitmap);
+        }
+        else Log.e("cxz",thisSong.getName()+" null image");
+
     }
 
     class SongViewHolder extends RecyclerView.ViewHolder{
@@ -74,4 +85,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
 
     }
+
+
 }

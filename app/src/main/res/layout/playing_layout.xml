@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/playing_layout"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/panel_height"
+                android:background="#ffffff"
+                android:padding="5dp">
+	<ImageView
+		android:id="@+id/imageView2"
+		android:layout_width="@dimen/panel_thumbnail_height"
+		android:layout_height="@dimen/panel_thumbnail_height" android:layout_alignParentLeft="true"
+		android:layout_alignParentStart="true" android:layout_alignParentTop="true"
+		android:src="@mipmap/ic_launcher"/>
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_alignTop="@+id/imageView2"
+		android:layout_toEndOf="@+id/imageView2"
+		android:layout_toLeftOf="@+id/imageView3"
+		android:layout_toRightOf="@+id/imageView2"
+		android:orientation="vertical">
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Name"
+			android:textColor="@android:color/black"
+			android:textSize="23sp"/>
+		<TextView android:layout_width="wrap_content"
+		          android:layout_height="wrap_content"
+		          android:text="Artist"
+		          android:textSize="20sp"/>
+	</LinearLayout>
+
+	<ImageView
+		android:id="@+id/imageView3"
+		android:layout_width="@dimen/panel_thumbnail_height"
+		android:layout_height="@dimen/panel_thumbnail_height"
+		android:layout_alignParentBottom="true"
+		android:layout_toLeftOf="@+id/imageView5" android:layout_toStartOf="@+id/imageView5"
+		android:src="@android:drawable/ic_media_previous"/>
+	<ImageView
+		android:id="@+id/imageView5"
+		android:layout_width="@dimen/panel_thumbnail_height"
+		android:layout_height="@dimen/panel_thumbnail_height" android:layout_alignParentTop="true"
+		android:layout_toLeftOf="@+id/imageView4" android:layout_toStartOf="@+id/imageView4"
+		android:src="@android:drawable/ic_media_play"/>
+	<ImageView
+		android:id="@+id/imageView4"
+		android:layout_width="@dimen/panel_thumbnail_height"
+		android:layout_height="@dimen/panel_thumbnail_height"
+		android:layout_alignParentEnd="true" android:layout_alignParentRight="true"
+		android:layout_alignTop="@+id/imageView3" android:src="@android:drawable/ic_media_next"/>
+</RelativeLayout>

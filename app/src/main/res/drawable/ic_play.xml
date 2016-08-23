@@ -1,0 +1,7 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="@dimen/button_play_height"
+        android:height="@dimen/button_play_height" android:viewportHeight="386.972"
+        android:viewportWidth="386.972">
+	<path android:fillColor="#FF000000"
+	      android:pathData="M26,0v387l335,-193.5L26,0zM56,52l245,141.5L56,335V52z"/>
+</vector>

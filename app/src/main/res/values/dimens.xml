@@ -25,4 +25,5 @@
 	<dimen name="notification_action_width">48.0dip</dimen>
 	<dimen name="panel_height">70dp</dimen>
 	<dimen name="panel_thumbnail_height">60dp</dimen>
+	<dimen name="button_play_height">40dp</dimen>
 </resources>

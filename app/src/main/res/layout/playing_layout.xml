@@ -35,21 +35,25 @@
 
 	<ImageView
 		android:id="@+id/imageView3"
-		android:layout_width="@dimen/panel_thumbnail_height"
-		android:layout_height="@dimen/panel_thumbnail_height"
-		android:layout_alignParentBottom="true"
-		android:layout_toLeftOf="@+id/imageView5" android:layout_toStartOf="@+id/imageView5"
-		android:src="@android:drawable/ic_media_previous"/>
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@+id/imageView5"
+		android:layout_centerVertical="true"
+		android:src="@drawable/ic_previous"/>
 	<ImageView
 		android:id="@+id/imageView5"
-		android:layout_width="@dimen/panel_thumbnail_height"
-		android:layout_height="@dimen/panel_thumbnail_height" android:layout_alignParentTop="true"
-		android:layout_toLeftOf="@+id/imageView4" android:layout_toStartOf="@+id/imageView4"
-		android:src="@android:drawable/ic_media_play"/>
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/ic_play"
+		android:layout_centerVertical="true"
+		android:layout_toLeftOf="@+id/imageView4"
+		android:layout_toStartOf="@+id/imageView4"/>
 	<ImageView
 		android:id="@+id/imageView4"
-		android:layout_width="@dimen/panel_thumbnail_height"
-		android:layout_height="@dimen/panel_thumbnail_height"
-		android:layout_alignParentEnd="true" android:layout_alignParentRight="true"
-		android:layout_alignTop="@+id/imageView3" android:src="@android:drawable/ic_media_next"/>
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/ic_next"
+		android:layout_centerVertical="true"
+		android:layout_alignParentRight="true"
+		android:layout_alignParentEnd="true"/>
 </RelativeLayout>

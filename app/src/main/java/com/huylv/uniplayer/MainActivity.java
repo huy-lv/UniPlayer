@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.google.firebase.database.ChildEventListener;
@@ -50,6 +51,8 @@ public class MainActivity extends BaseActivityDrawer {
     RelativeLayout playing_layout;
     @BindView(R.id.panelToolbar)
     Toolbar panelToolbar;
+    @BindView(R.id.playing_background)
+    ImageView playing_background;
 
     SlidingUpPanelLayout.PanelState currentState = SlidingUpPanelLayout.PanelState.COLLAPSED;
 
@@ -75,7 +78,6 @@ public class MainActivity extends BaseActivityDrawer {
 
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
-                Log.e("cxz", "current" + newState.toString());
                 switch (newState) {
                     case EXPANDED:
                         setPanelWhenExpanded();
@@ -103,6 +105,7 @@ public class MainActivity extends BaseActivityDrawer {
         playing_layout.setVisibility(View.INVISIBLE);
         setSupportActionBar(panelToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         currentState = SlidingUpPanelLayout.PanelState.EXPANDED;
     }
 
@@ -130,12 +133,17 @@ public class MainActivity extends BaseActivityDrawer {
 
     @Override
     public void onBackPressed() {
+        if(currentState == SlidingUpPanelLayout.PanelState.EXPANDED){
+            sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        }
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }
+
     }
 
     @Override
@@ -291,6 +299,9 @@ public class MainActivity extends BaseActivityDrawer {
 
     public void setSelectedSong(int position, int notificationId) {
         serviceMusic.setSelectedSong(position, notificationId);
+        playing_background.setImageBitmap(Config.StringToBitMap(Config.localSongList.get(position).getBitmapString()));
         sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
     }
+
+
 }

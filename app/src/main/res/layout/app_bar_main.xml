@@ -4,14 +4,15 @@
 	xmlns:sothree="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/sliding_layout"
-	tools:context="com.huylv.uniplayer.MainActivity"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:fitsSystemWindows="true"
 	android:gravity="bottom"
+	sothree:umanoDragView="@+id/playing_song_rl"
 	sothree:umanoPanelHeight="@dimen/panel_height"
+	sothree:umanoParallaxOffset="100dp"
 	sothree:umanoShadowHeight="4dp"
-	sothree:umanoParallaxOffset="100dp">
+	tools:context="com.huylv.uniplayer.MainActivity">
 
 	<RelativeLayout
 		android:layout_width="match_parent"
@@ -29,10 +30,11 @@
 	</RelativeLayout>
 
 	<RelativeLayout
+		android:id="@+id/playing_song_rl"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:background="#6ea955"
-		android:id="@+id/playing_song_rl"
+		android:clickable="true"
+		android:focusable="false"
 		android:gravity="center|top">
 		<include layout="@layout/full_screen_playing"/>
 	</RelativeLayout>

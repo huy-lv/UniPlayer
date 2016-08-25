@@ -3,6 +3,6 @@
 	android:width="@dimen/button_play_height"
 	android:height="@dimen/button_play_height" android:viewportHeight="465.0"
 	android:viewportWidth="465.0">
-	<path android:fillColor="#FF000000"
+	<path android:fillColor="#000000"
 	      android:pathData="M362.5,35v129.6L145,39v83.8L0,39v387l145,-83.8v83.8l217.5,-125.6V430H465V35H362.5zM435,400h-42.5V248.4L175,374v-83.8l-145,83.8V91l145,83.8v-83.8l217.5,125.6V65H435V400z"/>
 </vector>

@@ -15,6 +15,27 @@ public class Song extends RealmObject {
     private String filePath;
     private String downloadLink;
     private int length;
+    private String bitmapString;
+    private boolean availableOnServer;
+
+    public Song(String name, String artist, String filePath, int length, String bitmapString) {
+        this.name = name;
+        this.artist = artist;
+        this.filePath = filePath;
+        this.length = length;
+        this.bitmapString = bitmapString;
+    }
+
+    public Song() {
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
 
     public String getBitmapString() {
         return bitmapString;
@@ -24,8 +45,6 @@ public class Song extends RealmObject {
         this.bitmapString = bitmapString;
     }
 
-    private String bitmapString;
-
     public boolean isAvailableOnServer() {
         return availableOnServer;
     }
@@ -33,8 +52,6 @@ public class Song extends RealmObject {
     public void setAvailableOnServer(boolean availableOnServer) {
         this.availableOnServer = availableOnServer;
     }
-
-    private boolean availableOnServer;
 
     public String getName() {
         return name;
@@ -68,21 +85,10 @@ public class Song extends RealmObject {
         this.downloadLink = downloadLink;
     }
 
-    public Song(String name, String artist, String filePath, int length, String bitmapString) {
-        this.name = name;
-        this.artist = artist;
-        this.filePath = filePath;
-        this.length = length;
-        this.bitmapString = bitmapString;
-    }
-
     public void setAll(String name, String artist, String filePath){
         this.name = name;
         this.artist = artist;
         this.filePath = filePath;
-    }
-
-    public Song() {
     }
 
     @Override
@@ -97,10 +103,7 @@ public class Song extends RealmObject {
     }
 
     public boolean equals(Song s) {
-        if(name.equalsIgnoreCase(s.getName()) && artist.equalsIgnoreCase(s.getArtist())){
-            return true;
-        }
-        return false;
+        return name.equalsIgnoreCase(s.getName()) && artist.equalsIgnoreCase(s.getArtist());
     }
 
     public Uri getSongUri() {

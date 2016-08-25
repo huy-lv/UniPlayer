@@ -1,86 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:orientation="vertical"
->
+                android:orientation="vertical">
+
 	<ImageView
 		android:id="@+id/playing_background"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:scaleType="centerCrop"
-		android:src="@mipmap/ic_launcher"
-	/>
+		android:src="@mipmap/ic_launcher"/>
+
 	<include android:id="@+id/playing_layout" layout="@layout/playing_layout"/>
-	<include android:id="@+id/panelToolbar"
-	         layout="@layout/toolbar"
-	/>
-	<LinearLayout
+	<include android:id="@+id/panelToolbar" layout="@layout/toolbar"/>
+
+	<FrameLayout
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
+		android:layout_height="150dp"
 		android:layout_alignParentBottom="true"
 		android:layout_alignParentLeft="true"
-		android:layout_alignParentStart="true"
-		android:gravity="center"
-		android:orientation="vertical">
-		<TextView
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="Name"
-			android:textColor="@android:color/black"
-			android:textSize="30sp"/>
-		<TextView
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="artist"
-			android:textColor="@android:color/black"
-			android:textSize="20sp"/>
-		<com.rey.material.widget.Slider
+		android:layout_alignParentStart="true">
+
+		<ImageView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:scaleType="fitXY"
+			android:src="@drawable/cover_background"/>
+		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginLeft="50dp"
-			android:layout_marginRight="50dp"
-			app:sl_primaryColor="@android:color/white"
-			app:sl_secondaryColor="@android:color/white"/>
-		<LinearLayout
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center"
-			android:orientation="horizontal">
-			<ImageView
+			android:layout_alignParentBottom="true"
+			android:layout_alignParentLeft="true"
+			android:layout_alignParentStart="true"
+			android:gravity="center"
+			android:orientation="vertical">
+			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:layout_margin="10dp"
-				android:src="@drawable/ic_loop"
-				android:visibility="invisible"/>
-			<ImageView
-				android:id="@+id/playing_previous"
+				android:text="Name"
+				android:textColor="@android:color/black"
+				android:textSize="30sp"/>
+			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:layout_margin="10dp"
-				android:src="@drawable/ic_previous"/>
-			<ImageView
-				android:id="@+id/playing_play"
+				android:text="artist"
+				android:textColor="@android:color/black"
+				android:textSize="20sp"/>
+			<RelativeLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<com.rey.material.widget.Slider
+					android:id="@+id/playing_slider"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_alignParentTop="true"
+					android:layout_centerVertical="true"
+					android:layout_marginLeft="50dp"
+					android:layout_marginRight="50dp"
+					app:sl_primaryColor="@android:color/white"
+					app:sl_secondaryColor="@android:color/white"/>
+			</RelativeLayout>
+			<LinearLayout
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:layout_margin="10dp"
-				android:src="@drawable/ic_play"/>
-			<ImageView
-				android:id="@+id/playing_next"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_margin="10dp"
-				android:src="@drawable/ic_next"/>
-			<ImageView
-				android:id="@+id/playing_loop"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_margin="10dp"
-				android:src="@drawable/ic_loop"/>
+				android:layout_gravity="center"
+				android:orientation="horizontal">
+				<ImageView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:src="@drawable/ic_repeat_all"
+					android:visibility="invisible"/>
+				<com.huylv.uniplayer.animation.ImageViewWithAnim
+					android:id="@+id/playing_previous"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:src="@drawable/ic_previous"
+					android:tint="@android:color/white"/>
+				<com.huylv.uniplayer.animation.ImageViewWithAnim
+					android:id="@+id/playing_play"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:src="@drawable/ic_play"
+					android:tint="@android:color/white"/>
+				<com.huylv.uniplayer.animation.ImageViewWithAnim
+					android:id="@+id/playing_next"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:src="@drawable/ic_next"
+					android:tint="@android:color/white"/>
+				<com.huylv.uniplayer.animation.ImageViewWithAnim
+					android:id="@+id/playing_repeat"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:src="@drawable/ic_shuffle"
+					android:tint="@android:color/white"/>
+			</LinearLayout>
+
 		</LinearLayout>
-
-	</LinearLayout>
-
+	</FrameLayout>
 
 </RelativeLayout>

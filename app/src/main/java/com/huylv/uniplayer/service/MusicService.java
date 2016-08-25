@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -18,7 +17,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.huylv.uniplayer.Common;
 import com.huylv.uniplayer.R;
+import com.huylv.uniplayer.model.RepeatType;
 import com.huylv.uniplayer.model.Song;
 import com.huylv.uniplayer.task.Config;
 
@@ -26,38 +27,48 @@ import java.util.ArrayList;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
 
-    private MediaPlayer mPlayer;
-    private Uri mSongUri;
-
-    private ArrayList<Song> mListSongs;
-    private int SONG_POS = 0;
-
-    private final IBinder musicBind = new PlayerBinder();
-
-    private final String ACTION_STOP = "com.uniplayer.STOP";
-    private final String ACTION_NEXT = "com.uniplayer.NEXT";
-    private final String ACTION_PREVIOUS = "com.uniplayer.PREVIOUS";
-    private final String ACTION_PAUSE = "com.uniplayer.PAUSE";
 
     private static final int STATE_PAUSED = 1;
     private static final int STATE_PLAYING = 2;
-    private int mState = 0;
     private static final int REQUEST_CODE_PAUSE = 101;
     private static final int REQUEST_CODE_PREVIOUS = 102;
     private static final int REQUEST_CODE_NEXT = 103;
     private static final int REQUEST_CODE_STOP = 104;
     public static int NOTIFICATION_ID = 11;
+    private final IBinder musicBind = new PlayerBinder();
+    private final String ACTION_STOP = "com.uniplayer.STOP";
+    private final String ACTION_NEXT = "com.uniplayer.NEXT";
+    private final String ACTION_PREVIOUS = "com.uniplayer.PREVIOUS";
+    private final String ACTION_PAUSE = "com.uniplayer.PAUSE";
+    private RepeatType currentRepeatType = RepeatType.SHUFFLE;
+    private MediaPlayer mPlayer;
+    private Uri mSongUri;
+    private ArrayList<Song> mListSongs;
+    private int currentSongIndex = 0;
+    private int mState = 0;
     private NotificationCompat.Builder notificationBuilder;
     private NotificationCompat mNotification;
     private RemoteViews notificationView;
     private RemoteViews expNotificationView;
+    private Common mApp;
+    private boolean currentSong;
+    private NotificationManager notificationManager;
 
-    public class PlayerBinder extends Binder {//Service connection to play in background
 
-        public MusicService getService() {
-            Log.d("test", "getService()");
-            return MusicService.this;
-        }
+    public MediaPlayer getMediaPlayer() {
+        return mPlayer;
+    }
+
+    public RepeatType getCurrentRepeatType() {
+        return currentRepeatType;
+    }
+
+    public void setCurrentRepeatType(RepeatType currentRepeatType) {
+        this.currentRepeatType = currentRepeatType;
+    }
+
+    public int getCurrentSongIndex() {
+        return currentSongIndex;
     }
 
     @Override
@@ -70,7 +81,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onCreate() {
         super.onCreate();
         //Initializing the media player object
-        mPlayer = new MediaPlayer();
+        mApp = (Common) getApplicationContext();
         initPlayer();
         mPlayer.setOnPreparedListener(this);
         mPlayer.setOnCompletionListener(this);
@@ -96,7 +107,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 }
             }
         }
-        return super.onStartCommand(intent, flags, startId);
+        mApp.setService(this);
+        mApp.setIsServiceRunning(true);
+        return START_STICKY;
     }
 
     @Override
@@ -104,6 +117,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         //Stop the Mediaplayer
         mPlayer.stop();
         mPlayer.release();
+        mApp.setIsServiceRunning(false);
         return false;
     }
 
@@ -111,16 +125,22 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onCompletion(MediaPlayer mp) {
         mPlayer.reset();
         try {
-            if (SONG_POS != mListSongs.size() - 1) {
-                SONG_POS++;
-            } else
-                SONG_POS = 0;
-            mPlayer.setDataSource(getApplicationContext(), mListSongs.get(SONG_POS).getSongUri());
+            incrementSongIndex();
+            mPlayer.setDataSource(getApplicationContext(), mListSongs.get(currentSongIndex).getSongUri());
         } catch (Exception e) {
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
         mPlayer.prepareAsync();
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mApp.broadcastUpdateUICommand(new String[]{Common.SERVICE_STOPPING},
+                new String[]{""});
+        mApp.setService(null);
+        mApp.setIsServiceRunning(false);
     }
 
     @Override
@@ -134,12 +154,21 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private void initPlayer() {
+        if (mPlayer != null) {
+            mPlayer.release();
+            mPlayer = null;
+        }
+        mPlayer = new MediaPlayer();
+
         mPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
     }
 
-    public void startSong(Song song) {//Set data & start playing music
+    public boolean isPlayingMusic() {
+        return mState == STATE_PLAYING;
+    }
 
+    public void startSong(Song song) {//Set data & start playing music
         mPlayer.reset();
         mState = STATE_PLAYING;
         mSongUri = song.getSongUri();
@@ -149,11 +178,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
         mPlayer.prepareAsync();
-        updateNotification(song);
+        showNotification();
     }
 
     public void playPauseSong() {
-
+//
         if (mState == STATE_PAUSED) {
             notificationView.setImageViewResource(R.id.notification_expanded_base_play, android.R.drawable.ic_media_pause);
             mState = STATE_PLAYING;
@@ -164,8 +193,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             mState = STATE_PAUSED;
             mPlayer.pause();
         }
-        AppWidgetManager manager = AppWidgetManager.getInstance(getApplicationContext());
-        manager.updateAppWidget(NOTIFICATION_ID, notificationView);
+        //Update the UI and scrobbler.
+        String[] updateFlags = new String[]{Common.UPDATE_PLAYBACK_CONTROLS};
+        String[] flagValues = new String[]{""};
+
+        mApp.broadcastUpdateUICommand(updateFlags, flagValues);
+
+        showNotification();
     }
 
     public void stopSong() {
@@ -174,58 +208,66 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         manager.cancel(NOTIFICATION_ID);
     }
 
+    void incrementSongIndex() {
+        if (getCurrentRepeatType() == RepeatType.REPEAT_ALL) {
+            if (currentSongIndex == mListSongs.size() - 1)
+                currentSongIndex = 0;
+            else {
+                currentSongIndex++;
+            }
+        } else if (getCurrentRepeatType() == RepeatType.SHUFFLE) {
+            //TODO
+        }
+    }
+
     public void nextSong() {
-        startSong(mListSongs.get(SONG_POS + 1));
-        SONG_POS++;
+        incrementSongIndex();
+        startSong(mListSongs.get(currentSongIndex));
     }
 
     public void previousSong() {
-        startSong(mListSongs.get(SONG_POS - 1));
-        SONG_POS--;
+        startSong(mListSongs.get(currentSongIndex - 1));
+        currentSongIndex--;
     }
 
     public void setSongURI(Uri uri) {
         this.mSongUri = uri;
     }
 
+    public void setSelectedSong(int pos, int notification_id) {
+        currentSongIndex = pos;
+        NOTIFICATION_ID = notification_id;
+        setSongURI(mListSongs.get(currentSongIndex).getSongUri());
+        startSong(mListSongs.get(currentSongIndex));
+    }
+
 
 
     /*public void setSongList(ArrayList<Song> listSong, int pos, int notification_id) {
         mListSongs = listSong;
-        SONG_POS = pos;
+        currentSongIndex = pos;
         NOTIFICATION_ID = notification_id;
     }*/
-
-    public void setSelectedSong(int pos, int notification_id) {
-        SONG_POS = pos;
-        NOTIFICATION_ID = notification_id;
-        setSongURI(mListSongs.get(SONG_POS).getSongUri());
-        showNotification();
-        startSong(mListSongs.get(SONG_POS));
-    }
 
     public void setSongList(ArrayList<Song> listSong) {
         mListSongs = listSong;
     }
 
-    public void showNotification() {
-        PendingIntent pendingIntent;
-        Intent intent;
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
+    public Notification buildNotification() {
+        Song song = mListSongs.get(currentSongIndex);
         notificationView = new RemoteViews(getPackageName(), R.layout.notification_custom_layout);
-        expNotificationView = new RemoteViews(getPackageName(),R.layout.notification_custom_expanded_layout);
+        expNotificationView = new RemoteViews(getPackageName(), R.layout.notification_custom_expanded_layout);
 
-        notificationView.setTextViewText(R.id.notification_expanded_base_line_one, mListSongs.get(SONG_POS).getName());
+        notificationView.setTextViewText(R.id.notification_expanded_base_line_one, mListSongs.get(currentSongIndex).getName());
 
-        intent = new Intent(ACTION_STOP);
-        pendingIntent = PendingIntent.getService(getApplicationContext(), REQUEST_CODE_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent(ACTION_STOP);
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), REQUEST_CODE_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         notificationView.setOnClickPendingIntent(R.id.notification_expanded_base_collapse, pendingIntent);
         expNotificationView.setOnClickPendingIntent(R.id.notification_expanded_base_collapse, pendingIntent);
 
         intent = new Intent(ACTION_PAUSE);
         pendingIntent = PendingIntent.getService(getApplicationContext(), REQUEST_CODE_PAUSE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, playPauseTrackIntent, 0);
         notificationView.setOnClickPendingIntent(R.id.notification_expanded_base_play, pendingIntent);
         expNotificationView.setOnClickPendingIntent(R.id.notification_expanded_base_play, pendingIntent);
 
@@ -239,17 +281,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         notificationView.setOnClickPendingIntent(R.id.notification_expanded_base_next, pendingIntent);
         expNotificationView.setOnClickPendingIntent(R.id.notification_expanded_base_next, pendingIntent);
 
-        notificationBuilder.setSmallIcon(android.R.drawable.ic_media_play)
-                .setOngoing(true)
-                .setWhen(System.currentTimeMillis())
-                .setCustomContentView(notificationView)
-                .setCustomBigContentView(expNotificationView)
-                .setDefaults(Notification.FLAG_NO_CLEAR);
-        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
-    }
+        if (isPlayingMusic()) {
+            notificationView.setImageViewResource(R.id.notification_base_play, R.drawable.ic_pause);
+            expNotificationView.setImageViewResource(R.id.notification_expanded_base_play, R.drawable.ic_pause);
+        } else {
+            notificationView.setImageViewResource(R.id.notification_base_play, R.drawable.ic_play);
+            expNotificationView.setImageViewResource(R.id.notification_expanded_base_play, R.drawable.ic_play);
+        }
 
-    private void updateNotification(Song song) {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationView.setTextViewText(R.id.notification_expanded_base_line_one, song.getName());
         expNotificationView.setTextViewText(R.id.notification_expanded_base_line_one, song.getName());
 
@@ -258,6 +297,26 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         notificationView.setImageViewBitmap(R.id.notification_base_image, Config.StringToBitMap(song.getBitmapString()));
         expNotificationView.setImageViewBitmap(R.id.notification_base_image, Config.StringToBitMap(song.getBitmapString()));
-        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+
+        notificationBuilder.setSmallIcon(android.R.drawable.ic_media_play)
+                .setOngoing(true)
+                .setWhen(System.currentTimeMillis())
+                .setCustomContentView(notificationView)
+                .setCustomBigContentView(expNotificationView)
+                .setDefaults(Notification.FLAG_NO_CLEAR);
+        return notificationBuilder.build();
+    }
+
+    public void showNotification() {
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(NOTIFICATION_ID, buildNotification());
+    }
+
+    public class PlayerBinder extends Binder {//Service connection to play in background
+
+        public MusicService getService() {
+            Log.d("test", "getService()");
+            return MusicService.this;
+        }
     }
 }

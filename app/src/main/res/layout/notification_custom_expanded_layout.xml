@@ -28,7 +28,7 @@
         android:orientation="horizontal"
         android:showDividers="middle" >
 
-        <ImageButton
+        <ImageView
             android:id="@+id/notification_expanded_base_previous"
             android:layout_width="0dp"
             android:layout_height="@dimen/notification_expanded_button_height"
@@ -36,9 +36,9 @@
             android:background="?android:selectableItemBackground"
             android:padding="@dimen/notification_expanded_button_padding"
             android:scaleType="fitCenter"
-            android:src="@android:drawable/ic_media_previous" />
+            android:src="@drawable/ic_previous"/>
 
-        <ImageButton
+        <ImageView
             android:id="@+id/notification_expanded_base_play"
             android:layout_width="0dp"
             android:layout_height="@dimen/notification_expanded_button_height"
@@ -46,9 +46,9 @@
             android:background="?android:selectableItemBackground"
             android:padding="@dimen/notification_expanded_button_padding"
             android:scaleType="fitCenter"
-            android:src="@android:drawable/ic_media_pause" />
+            android:src="@drawable/ic_play"/>
 
-        <ImageButton
+        <ImageView
             android:id="@+id/notification_expanded_base_next"
             android:layout_width="0dp"
             android:layout_height="@dimen/notification_expanded_button_height"
@@ -56,7 +56,7 @@
             android:background="?android:selectableItemBackground"
             android:padding="@dimen/notification_expanded_button_padding"
             android:scaleType="fitCenter"
-            android:src="@android:drawable/ic_media_next" />
+            android:src="@drawable/ic_next"/>
     </LinearLayout>
 
     <ImageView
@@ -67,7 +67,7 @@
         android:layout_toRightOf="@+id/notification_base_image"
         android:background="?android:dividerHorizontal" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/notification_expanded_base_collapse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

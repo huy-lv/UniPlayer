@@ -58,6 +58,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             @Override
             public void onClick(View v) {
                 ((MainActivity)context).setSelectedSong(position, MusicService.NOTIFICATION_ID);
+                ((MainActivity) context).updateUI(position);
             }
         });
 

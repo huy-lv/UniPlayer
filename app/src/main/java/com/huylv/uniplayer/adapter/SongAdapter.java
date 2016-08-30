@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,6 +24,7 @@ import java.util.ArrayList;
  * Created by HuyLV-CT on 18-Aug-16.
  */
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> {
+    private static final long FADE_DURATION = 1000;
     ArrayList<Song> songArrayList;
     Context context;
 
@@ -35,7 +37,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     public SongViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_song_list, parent, false);
-
         return new SongViewHolder(itemView);
     }
 
@@ -49,16 +50,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         Song thisSong = songArrayList.get(position);
         holder.title.setText(thisSong.getName());
         holder.description.setText(thisSong.getArtist());
-//        if(songArrayList.get(position).equals(Config.playingSong)){
-//            holder.playing.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.ic_media_pause));
-//        }else{
-//            holder.playing.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.ic_media_play));
-//        }
         holder.song_item_cv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ((MainActivity)context).setSelectedSong(position, MusicService.NOTIFICATION_ID);
-                ((MainActivity) context).updateUI(position);
             }
         });
 
@@ -67,7 +62,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             holder.playing.setImageBitmap(bitmap);
         }
         else Log.e("cxz",thisSong.getName()+" null image");
+        setFadeAnimation(holder.itemView);
+    }
 
+    private void setFadeAnimation(View view) {
+        AlphaAnimation anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(FADE_DURATION);
+        view.startAnimation(anim);
     }
 
     class SongViewHolder extends RecyclerView.ViewHolder{
@@ -83,9 +84,5 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             playing = (ImageView)v.findViewById(R.id.item_song_iv);
             song_item_cv = (CardView)v.findViewById(R.id.item_song_cv);
         }
-
-
     }
-
-
 }

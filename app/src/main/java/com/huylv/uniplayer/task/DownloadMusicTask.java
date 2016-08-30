@@ -3,7 +3,6 @@ package com.huylv.uniplayer.task;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -38,20 +37,7 @@ public class DownloadMusicTask extends AsyncTask<Void,Void,String> {
 
     @Override
     protected String doInBackground(Void... voids) {
-
-        //create root directory
-        rootFolder = new File(Environment.getExternalStorageDirectory() + File.separator + "music");
-        boolean success = true;
-        if (!rootFolder.exists()) {
-            success = rootFolder.mkdir();
-        } else {
-            Log.e("cxz", "root folder exist");
-        }
-        if (success) {
-            Log.e("cxz", "root folder created");
-        } else {
-            Log.e("cxz", "create error");
-        }
+        rootFolder = Config.rootFolder;
 
         totalSong = Config.songToDownload.size();
         //
@@ -99,6 +85,7 @@ public class DownloadMusicTask extends AsyncTask<Void,Void,String> {
         return null;
     }
 
+
     private String getDownloadLink(String songLink) {
         String link=null;
         try {
@@ -106,6 +93,7 @@ public class DownloadMusicTask extends AsyncTask<Void,Void,String> {
             Document docSong = Jsoup.connect(Config.CSN_URL+songLink+"_download.html").get();
             String cssDownloadLink = "#downloadlink > b";
             Element e = docSong.select(cssDownloadLink).first();
+//            Log.e("cxz",Config.CSN_URL+songLink+"_download.html"+"\n e:"+docSong.html());
             String tempHtml = e.html();
             int t1 = tempHtml.indexOf("document.write");
             int t2 = tempHtml.indexOf(".mp3");

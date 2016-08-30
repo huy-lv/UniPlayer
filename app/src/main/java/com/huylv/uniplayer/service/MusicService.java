@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -22,8 +21,6 @@ import com.huylv.uniplayer.R;
 import com.huylv.uniplayer.model.RepeatType;
 import com.huylv.uniplayer.model.Song;
 import com.huylv.uniplayer.task.Config;
-
-import java.util.ArrayList;
 
 public class MusicService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
 
@@ -42,8 +39,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private final String ACTION_PAUSE = "com.uniplayer.PAUSE";
     private RepeatType currentRepeatType = RepeatType.SHUFFLE;
     private MediaPlayer mPlayer;
-    private Uri mSongUri;
-    private ArrayList<Song> mListSongs;
     private int currentSongIndex = 0;
     private int mState = 0;
     private NotificationCompat.Builder notificationBuilder;
@@ -86,6 +81,12 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mPlayer.setOnPreparedListener(this);
         mPlayer.setOnCompletionListener(this);
         mPlayer.setOnErrorListener(this);
+        mPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+                return true;
+            }
+        });
         notificationBuilder = new NotificationCompat.Builder(this);
     }
 
@@ -106,9 +107,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     stopSelf();
                 }
             }
+
+
         }
         mApp.setService(this);
         mApp.setIsServiceRunning(true);
+        if (intent != null) {
+            if (intent.hasExtra(Common.START_SONG_POS)) {
+                startSong(Config.localSongList.get(intent.getIntExtra(Common.START_SONG_POS, 0)));
+            }
+        }
         return START_STICKY;
     }
 
@@ -126,7 +134,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mPlayer.reset();
         try {
             incrementSongIndex();
-            mPlayer.setDataSource(getApplicationContext(), mListSongs.get(currentSongIndex).getSongUri());
+            mPlayer.setDataSource(getApplicationContext(), Config.localSongList.get(currentSongIndex).getSongUri());
         } catch (Exception e) {
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
@@ -169,15 +177,25 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void startSong(Song song) {//Set data & start playing music
+//        Log.e("cxz","index = "+currentSongIndex + " song "+song);
+//        for(Song s : Config.localSongList){
+//            Log.e("cxz","song;"+s);
+//        }
+
         mPlayer.reset();
         mState = STATE_PLAYING;
-        mSongUri = song.getSongUri();
         try {
-            mPlayer.setDataSource(getApplicationContext(), mSongUri);
+            mPlayer.setDataSource(getApplicationContext(), song.getSongUri());
         } catch (Exception e) {
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
         mPlayer.prepareAsync();
+        Log.e("cxz", mApp.isServiceRunning() + " -- " + mApp.getService());
+        if (mApp.isServiceRunning() && mApp.getService() != null) {
+            String[] updateFlags = new String[]{Common.UPDATE_UI_SONG_AND_PLAYBACK};
+            String[] flagValues = new String[]{String.valueOf(mApp.getService().getCurrentSongIndex())};
+            mApp.broadcastUpdateUICommand(updateFlags, flagValues);
+        }
         showNotification();
     }
 
@@ -194,8 +212,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             mPlayer.pause();
         }
         //Update the UI and scrobbler.
-        String[] updateFlags = new String[]{Common.UPDATE_PLAYBACK_CONTROLS};
-        String[] flagValues = new String[]{""};
+        String[] updateFlags = new String[]{Common.UPDATE_UI_SONG_AND_PLAYBACK};
+        String[] flagValues = new String[]{String.valueOf(currentSongIndex)};
 
         mApp.broadcastUpdateUICommand(updateFlags, flagValues);
 
@@ -210,55 +228,47 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     void incrementSongIndex() {
         if (getCurrentRepeatType() == RepeatType.REPEAT_ALL) {
-            if (currentSongIndex == mListSongs.size() - 1)
+            if (currentSongIndex == Config.localSongList.size() - 1)
                 currentSongIndex = 0;
             else {
                 currentSongIndex++;
             }
         } else if (getCurrentRepeatType() == RepeatType.SHUFFLE) {
-            //TODO
+            currentSongIndex = Config.randInt(0, Config.localSongList.size() - 1);
         }
     }
 
     public void nextSong() {
         incrementSongIndex();
-        startSong(mListSongs.get(currentSongIndex));
+        startSong(Config.localSongList.get(currentSongIndex));
     }
 
     public void previousSong() {
-        startSong(mListSongs.get(currentSongIndex - 1));
+        startSong(Config.localSongList.get(currentSongIndex - 1));
         currentSongIndex--;
     }
 
-    public void setSongURI(Uri uri) {
-        this.mSongUri = uri;
-    }
 
     public void setSelectedSong(int pos, int notification_id) {
         currentSongIndex = pos;
         NOTIFICATION_ID = notification_id;
-        setSongURI(mListSongs.get(currentSongIndex).getSongUri());
-        startSong(mListSongs.get(currentSongIndex));
+        startSong(Config.localSongList.get(currentSongIndex));
     }
 
 
 
     /*public void setSongList(ArrayList<Song> listSong, int pos, int notification_id) {
-        mListSongs = listSong;
+        Config.localSongList = listSong;
         currentSongIndex = pos;
         NOTIFICATION_ID = notification_id;
     }*/
 
-    public void setSongList(ArrayList<Song> listSong) {
-        mListSongs = listSong;
-    }
-
     public Notification buildNotification() {
-        Song song = mListSongs.get(currentSongIndex);
+        Song song = Config.localSongList.get(currentSongIndex);
         notificationView = new RemoteViews(getPackageName(), R.layout.notification_custom_layout);
         expNotificationView = new RemoteViews(getPackageName(), R.layout.notification_custom_expanded_layout);
 
-        notificationView.setTextViewText(R.id.notification_expanded_base_line_one, mListSongs.get(currentSongIndex).getName());
+        notificationView.setTextViewText(R.id.notification_expanded_base_line_one, Config.localSongList.get(currentSongIndex).getName());
 
         Intent intent = new Intent(ACTION_STOP);
         PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), REQUEST_CODE_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT);

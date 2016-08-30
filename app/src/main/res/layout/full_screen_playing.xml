@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/fullscreen_playing_rl"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
 	<ImageView
-		android:id="@+id/playing_background"
+		android:id="@+id/fullscreen_playing_background"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:scaleType="centerCrop"
@@ -36,12 +37,14 @@
 			android:gravity="center"
 			android:orientation="vertical">
 			<TextView
+				android:id="@+id/fullscreen_playing_song_name"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="Name"
 				android:textColor="@android:color/black"
 				android:textSize="30sp"/>
 			<TextView
+				android:id="@+id/fullscreen_playing_song_artist"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="artist"

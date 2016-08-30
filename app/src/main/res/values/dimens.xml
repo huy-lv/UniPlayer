@@ -26,4 +26,5 @@
 	<dimen name="panel_height">70dp</dimen>
 	<dimen name="panel_thumbnail_height">60dp</dimen>
 	<dimen name="button_play_height">40dp</dimen>
+	<dimen name="download_button_height">40dp</dimen>
 </resources>

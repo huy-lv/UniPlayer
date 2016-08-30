@@ -29,6 +29,13 @@ public class Song extends RealmObject {
     public Song() {
     }
 
+    public Song(String name, String artist, String downloadLink, int length) {
+        this.name = name;
+        this.artist = artist;
+        this.downloadLink = downloadLink;
+        this.length = length;
+    }
+
     public int getLength() {
         return length;
     }

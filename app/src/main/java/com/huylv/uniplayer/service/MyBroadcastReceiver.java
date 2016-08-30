@@ -25,21 +25,21 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         Bundle bundle = intent.getExtras();
 
         //update ui
-        if (intent.hasExtra(Common.UPDATE_PAGER_POSTIION)) {
-            mainActivity.updateUI(Integer.parseInt(bundle.getString(Common.UPDATE_PAGER_POSTIION)));
+        if (intent.hasExtra(Common.UPDATE_UI_SONG_AND_PLAYBACK)) {
+            mainActivity.updateUI(Integer.parseInt(bundle.getString(Common.UPDATE_UI_SONG_AND_PLAYBACK)));
         }
 
         //Updates the playback control buttons.
-        if (intent.hasExtra(Common.UPDATE_PLAYBACK_CONTROLS)) {
-            mainActivity.setPlayPauseButton();
-            mainActivity.setRepeatButtonIcon();
-        }
+//        if (intent.hasExtra(Common.UPDATE_PLAYBACK_CONTROLS)) {
+//            mainActivity.setPlayPauseButton();
+//            mainActivity.setRepeatButtonIcon();
+//        }
 
         //Updates the duration of the SeekBar.
-        if (intent.hasExtra(Common.UPDATE_SEEKBAR_DURATION))
-            mainActivity.setSliderDuration(Integer.parseInt(
-                    bundle.getString(
-                            Common.UPDATE_SEEKBAR_DURATION)));
+//        if (intent.hasExtra(Common.UPDATE_SEEKBAR_DURATION))
+//            mainActivity.setSliderDuration(Integer.parseInt(
+//                    bundle.getString(
+//                            Common.UPDATE_SEEKBAR_DURATION)));
 
 
         //Close this activity if the service is about to stop running.

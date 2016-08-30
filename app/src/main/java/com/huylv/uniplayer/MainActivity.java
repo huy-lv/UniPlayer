@@ -1,21 +1,25 @@
 package com.huylv.uniplayer;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -54,6 +58,7 @@ public class MainActivity extends BaseActivityDrawer {
     //public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     private static final int MENU_SYNC = 12;
     public Handler mHandler = new Handler();
+    public boolean FLAG_WILL_BUILD = false;
     SongFragment songFragment;
     @BindView(R.id.playing_song_rl)
     RelativeLayout playing_song_rl;
@@ -63,8 +68,8 @@ public class MainActivity extends BaseActivityDrawer {
     RelativeLayout playing_layout;
     @BindView(R.id.panelToolbar)
     Toolbar panelToolbar;
-    @BindView(R.id.playing_background)
-    ImageView playing_background;
+    @BindView(R.id.fullscreen_playing_background)
+    ImageView fullscreen_playing_background;
     @BindView(R.id.playing_song_name)
     TextView playing_song_name;
     @BindView(R.id.playing_song_artist)
@@ -77,7 +82,12 @@ public class MainActivity extends BaseActivityDrawer {
     ImageViewWithAnim playing_play;
     @BindView(R.id.playing_slider)
     Slider playing_slider;
+    @BindView(R.id.fullscreen_playing_song_name)
+    TextView fullscreen_playing_song_name;
+    @BindView(R.id.fullscreen_playing_song_artist)
+    TextView fullscreen_playing_song_artist;
     SlidingUpPanelLayout.PanelState currentState = SlidingUpPanelLayout.PanelState.COLLAPSED;
+    private SearchFragment searchFragment;
     private MenuItem refreshItem;
     private DatabaseReference songTable;
     private ChildEventListener addSongListener;
@@ -93,6 +103,7 @@ public class MainActivity extends BaseActivityDrawer {
             try {
                 long currentPosition = serviceMusic.getMediaPlayer().getCurrentPosition();
                 int currentPositionInSecs = (int) currentPosition / 1000;
+                Log.e("cxz", "value," + currentPositionInSecs + "+" + playing_slider.getMaxValue());
                 playing_slider.setValue(currentPositionInSecs, true);
                 mHandler.postDelayed(sliderUpdateRunnable, 1000);
             } catch (Exception e) {
@@ -108,7 +119,6 @@ public class MainActivity extends BaseActivityDrawer {
             MusicService.PlayerBinder binder = (MusicService.PlayerBinder) service;
             //get service
             serviceMusic = binder.getService();
-            serviceMusic.setSongList(Config.localSongList);
         }
 
         @Override
@@ -117,24 +127,30 @@ public class MainActivity extends BaseActivityDrawer {
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        setContentView(R.layout.activity_main);
 
+        Config.createRootFolder();
         mApp = (Common) getApplicationContext();
         mReceiver = new MyBroadcastReceiver(this);
-
-        createFireBase();
+        if (!checkIfAlreadyHavePermission()) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 101);
+        } else {
+            createFireBase();
+        }
         songFragment = new SongFragment();
         getSupportFragmentManager().beginTransaction().add(R.id.layout_main, songFragment).addToBackStack(null).commit();
+
+        searchFragment = new SearchFragment();
 
         initView();
     }
 
     private void initView() {
         sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         panelToolbar.setBackgroundColor(Color.TRANSPARENT);
         panelToolbar.setVisibility(View.INVISIBLE);
 
@@ -158,7 +174,7 @@ public class MainActivity extends BaseActivityDrawer {
                         setPanelWhenCollapsed();
                         break;
                 }
-                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
             }
         });
 
@@ -170,6 +186,8 @@ public class MainActivity extends BaseActivityDrawer {
                 }
             }
         });
+
+        findViewById(R.id.fullscreen_playing_rl).setOnClickListener(null);
     }
 
     private void setPanelWhenCollapsed() {
@@ -227,15 +245,16 @@ public class MainActivity extends BaseActivityDrawer {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case MENU_SYNC:
-                if (Config.isOnline(this)) {
-                    startSyncAnim();
-                    (new BuildLibraryTask(MainActivity.this)).execute();
-                } else {
+                if (!Config.isOnline(this)) {
                     Toast.makeText(this, "No internet connection!", Toast.LENGTH_SHORT).show();
                 }
+                createFireBase();
+                startSyncAnim();
                 break;
             case android.R.id.home:
-                onBackPressed();
+                if (currentState == SlidingUpPanelLayout.PanelState.COLLAPSED || currentState == SlidingUpPanelLayout.PanelState.HIDDEN) {
+                    drawer.openDrawer(Gravity.LEFT);
+                } else onBackPressed();
                 break;
         }
 
@@ -248,9 +267,9 @@ public class MainActivity extends BaseActivityDrawer {
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            // Handle the camera action
+            getSupportFragmentManager().beginTransaction().replace(R.id.layout_main, songFragment).addToBackStack(null).commit();
         } else if (id == R.id.nav_gallery) {
-
+            getSupportFragmentManager().beginTransaction().replace(R.id.layout_main, searchFragment).addToBackStack(null).commit();
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
@@ -293,37 +312,55 @@ public class MainActivity extends BaseActivityDrawer {
         }
     }
 
+    private boolean checkIfAlreadyHavePermission() {
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
     private void createFireBase() {
+
         //realm
         RealmConfiguration realmConfig = new RealmConfiguration.Builder(this).deleteRealmIfMigrationNeeded().build();
         Realm.setDefaultConfiguration(realmConfig);
 
+
         if (!Config.isOnline(this)) {
-            RealmQuery<Song> query = Realm.getDefaultInstance().where(Song.class);
-            RealmResults<Song> results = query.findAll();
-            Config.localSongList.clear();
-            Config.localSongList.addAll(results);
-        } else {
+            //not online, second run -> read from  db
+            if (!mApp.readFirstRun()) {
+                RealmQuery<Song> query = Realm.getDefaultInstance().where(Song.class);
+                RealmResults<Song> results = query.findAll();
+                Config.localSongList.clear();
+                Config.localSongList.addAll(results);
+            } else { //not online, first run, build
+                //read from internal storage
+                (new BuildLibraryTask(this)).execute();
+                //set first run false
+                mApp.saveFirstRunToSp();
+            }
+        } else {// online->build
             songTable = Config.firebaseDatabase.getReference("Song");
-            addSongListener = new ChildEventListener() {
+            songTable.addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     Song ss = dataSnapshot.getValue(Song.class);
                     if (!checkIfSongExisted(ss)) {
                         Config.serverSongList.add(ss);
-                        (new BuildLibraryTask(MainActivity.this)).execute();
+                        Toast.makeText(MainActivity.this, "new song added", Toast.LENGTH_SHORT).show();
+                        if (FLAG_WILL_BUILD) {
+                            (new BuildLibraryTask(MainActivity.this)).execute();
+                        }
                     }
                     Log.e("cxz", "child add:" + ss);
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
+                    Log.e("cxz", "child changed " + dataSnapshot.getKey());
                 }
 
                 @Override
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                    Log.e("cxz", "child remove  " + dataSnapshot.getKey());
                 }
 
                 @Override
@@ -335,14 +372,16 @@ public class MainActivity extends BaseActivityDrawer {
                 public void onCancelled(DatabaseError databaseError) {
 
                 }
-            };
-            songTable.addChildEventListener(addSongListener);
+            });
             songTable.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (Config.serverSongList.size() > 0) {
-//                        SyncMusicTask syncMusicTask = new SyncMusicTask(MainActivity.this);
-//                        syncMusicTask.execute();
+                        (new BuildLibraryTask(MainActivity.this)).execute();
+                        Log.e("cxz", "add done" + Config.serverSongList.size() + " start build");
+                        (new BuildLibraryTask(MainActivity.this)).execute();
+                        songTable.removeEventListener(this);
+                        FLAG_WILL_BUILD = true;
                     }
                 }
 
@@ -352,6 +391,7 @@ public class MainActivity extends BaseActivityDrawer {
                 }
             });
         }
+
     }
 
     private boolean checkIfSongExisted(Song ss) {
@@ -365,34 +405,25 @@ public class MainActivity extends BaseActivityDrawer {
 
     public void refreshSongList() {
         songFragment.adapter.notifyDataSetChanged();
-        serviceMusic.setSongList(Config.localSongList);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         //Start service
-        if (playIntent == null) {
-            playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
-            mApp.setIsServiceRunning(true);
-        }
+//        if (playIntent == null) {
+//            playIntent = new Intent(this, MusicService.class);
+//            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+//            startService(playIntent);
+//            mApp.setIsServiceRunning(true);
+//        }
 
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver((mReceiver), new IntentFilter(Common.UPDATE_UI_BROADCAST));
 
         if (mApp.isServiceRunning() && mApp.getService() != null) {
-            String[] updateFlags = new String[]{Common.UPDATE_PAGER_POSTIION,
-                    Common.UPDATE_SEEKBAR_DURATION,
-                    Common.HIDE_STREAMING_BAR,
-                    Common.INIT_PAGER,
-                    Common.UPDATE_PLAYBACK_CONTROLS,
-                    Common.UPDATE_EQ_FRAGMENT};
-
-            String[] flagValues = new String[]{"" + mApp.getService().getCurrentSongIndex(),
-                    "" + mApp.getService().getMediaPlayer().getDuration() / 1000,
-                    "", "", "", ""};
+            String[] updateFlags = new String[]{Common.UPDATE_UI_SONG_AND_PLAYBACK};
+            String[] flagValues = new String[]{String.valueOf(mApp.getService().getCurrentSongIndex())};
             mApp.broadcastUpdateUICommand(updateFlags, flagValues);
         }
     }
@@ -409,8 +440,15 @@ public class MainActivity extends BaseActivityDrawer {
     }
 
     public void setSelectedSong(int position, int notificationId) {
-        serviceMusic.setSelectedSong(position, notificationId);
-
+        if (mApp.getService() == null) {
+            playIntent = new Intent(this, MusicService.class);
+            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            playIntent.putExtra(Common.START_SONG_POS, position);
+            startService(playIntent);
+            mApp.setIsServiceRunning(true);
+        } else {
+            serviceMusic.setSelectedSong(position, notificationId);
+        }
     }
 
     @OnClick(R.id.playing_next)
@@ -445,8 +483,10 @@ public class MainActivity extends BaseActivityDrawer {
 
     public void setSliderDuration(int duration) {
         playing_slider.setValueRange(0, duration, true);
-        playing_slider.setValue(mApp.getService().getMediaPlayer().getCurrentPosition() / 1000, true);
-        mHandler.postDelayed(sliderUpdateRunnable, 1000);
+        mHandler.removeCallbacksAndMessages(null);
+        if (mApp.getService().isPlayingMusic()) {
+            mHandler.postDelayed(sliderUpdateRunnable, 1000);
+        }
     }
 
     public void setPlayPauseButton() {
@@ -458,9 +498,7 @@ public class MainActivity extends BaseActivityDrawer {
                 playing_play.startAnimation(R.drawable.ic_play);
                 startSliderStrobeEffect();
             }
-
         }
-
     }
 
     private void startSliderStrobeEffect() {
@@ -487,13 +525,41 @@ public class MainActivity extends BaseActivityDrawer {
     public void updateUI(int currentIndex) {
         Song song = Config.localSongList.get(currentIndex);
         Bitmap songBitmap = Config.StringToBitMap(song.getBitmapString());
-        playing_background.setImageBitmap(songBitmap);
+        fullscreen_playing_background.setImageBitmap(songBitmap);
         sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
 
         playing_song_name.setText(song.getName());
         playing_song_artist.setText(song.getArtist());
         playing_song_thumbnail.setImageBitmap(songBitmap);
+
+        fullscreen_playing_song_name.setText(song.getName());
+        fullscreen_playing_song_artist.setText(song.getArtist());
+
+        setRepeatButtonIcon();
         setPlayPauseButton();
         setSliderDuration(song.getLength());
+    }
+
+    @OnClick(R.id.playing_layout)
+    void expand() {
+        sliding_layout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 101:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //granted
+                    startSyncAnim();
+                    createFireBase();
+                } else {
+                    //not granted
+                    Toast.makeText(MainActivity.this, "Permission not granted!", Toast.LENGTH_LONG).show();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 }

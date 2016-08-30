@@ -2,7 +2,9 @@ package com.huylv.uniplayer;
 
 import android.app.Application;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.huylv.uniplayer.service.MusicService;
@@ -14,16 +16,10 @@ public class Common extends Application {
 
     public static final String UPDATE_UI_BROADCAST = "com.huylv.uniplayer.NEW_SONG_UPDATE_UI";
     //Update UI broadcast flags.
-    public static final String UPDATE_SEEKBAR_DURATION = "UpdateSeekbarDuration";
-    public static final String UPDATE_PAGER_POSTIION = "UpdatePagerPosition";
-    public static final String UPDATE_PLAYBACK_CONTROLS = "UpdatePlabackControls";
+    public static final String UPDATE_UI_SONG_AND_PLAYBACK = "UpdatePagerPosition";
     public static final String SERVICE_STOPPING = "ServiceStopping";
-    public static final String SHOW_STREAMING_BAR = "ShowStreamingBar";
-    public static final String HIDE_STREAMING_BAR = "HideStreamingBar";
-    public static final String UPDATE_BUFFERING_PROGRESS = "UpdateBufferingProgress";
-    public static final String INIT_PAGER = "InitPager";
-    public static final String NEW_QUEUE_ORDER = "NewQueueOrder";
-    public static final String UPDATE_EQ_FRAGMENT = "UpdateEQFragment";
+    public static final String KEY_FIRST_RUN = "KEY_FIRST_RUN";
+    public static final String START_SONG_POS = "START_SONG_POS";
     private LocalBroadcastManager mLocalBroadcastManager;
     private boolean mIsServiceRunning = false;
     private MusicService mService;
@@ -74,6 +70,19 @@ public class Common extends Application {
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
         mLocalBroadcastManager.sendBroadcast(intent);
 
+
+    }
+
+    public void saveFirstRunToSp() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putBoolean(KEY_FIRST_RUN, false);
+        editor.apply();
+    }
+
+    public boolean readFirstRun() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        return sp.getBoolean(KEY_FIRST_RUN, true);
     }
 
 //    public boolean isServiceRunning(Class<?> serviceClass) {
